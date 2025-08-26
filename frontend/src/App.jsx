@@ -97,7 +97,7 @@ function AppContent() {
           </div>
 
           <div className="text-center mb-8">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
               Diet Management
             </h1>
             <p className="text-lg text-slate-600 font-medium">
