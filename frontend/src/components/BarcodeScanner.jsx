@@ -133,31 +133,34 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
         await videoRef.current.play();
       }
 
-      // Get available video input devices for device selection
-      const devices = await readerRef.current.listVideoInputDevices();
-      console.log("Available cameras:", devices.length, devices);
+      // Get available video input devices
+      const allDevices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = allDevices.filter(
+        (device) => device.kind === "videoinput"
+      );
+      console.log("Available cameras:", videoDevices.length, videoDevices);
 
-      if (devices.length === 0) {
+      if (videoDevices.length === 0) {
         throw new Error("No camera devices found");
       }
 
       // Find the best camera (prefer back camera)
-      let selectedDevice = devices[0];
-      const backCamera = devices.find(
+      let selectedDeviceId = videoDevices[0].deviceId;
+      const backCamera = videoDevices.find(
         (device) =>
           device.label.toLowerCase().includes("back") ||
           device.label.toLowerCase().includes("rear") ||
           device.label.toLowerCase().includes("environment")
       );
       if (backCamera) {
-        selectedDevice = backCamera;
+        selectedDeviceId = backCamera.deviceId;
       }
 
-      console.log("Selected camera:", selectedDevice.label);
+      console.log("Selected camera:", selectedDeviceId);
 
-      // Start barcode detection
-      readerRef.current.decodeFromVideoDevice(
-        selectedDevice.deviceId,
+      // Start barcode detection directly from the video element
+      await readerRef.current.decodeFromVideoDevice(
+        selectedDeviceId,
         videoRef.current,
         (result, err) => {
           if (result) {
