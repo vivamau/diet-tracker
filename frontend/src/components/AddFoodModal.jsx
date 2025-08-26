@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Scan } from "lucide-react";
+import { Search, Plus, Scan, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,8 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
   const [scannerError, setScannerError] = useState(null);
   const [showManualBarcodeInput, setShowManualBarcodeInput] = useState(false);
   const [manualBarcode, setManualBarcode] = useState("");
+  const [isSearchingAPI, setIsSearchingAPI] = useState(false);
+  const [foundFromLocalDB, setFoundFromLocalDB] = useState(false);
 
   // Fetch all food items
   const fetchFoodItems = async () => {
@@ -42,6 +44,9 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
       setSearchQuery("");
       setSelectedFood(null);
       setQuantity(100);
+      setFoundFromLocalDB(false);
+      setIsSearchingAPI(false);
+      setScannerError(null);
     }
   }, [isOpen]);
 
@@ -101,6 +106,8 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
   const handleBarcodeScanned = async (barcode) => {
     setIsScannerOpen(false);
     setScannerError(null);
+    setFoundFromLocalDB(false);
+    setIsSearchingAPI(false);
 
     try {
       // First, search for food item in our local database
@@ -111,13 +118,19 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
       if (localResponse.ok) {
         const foodItem = await localResponse.json();
         setSelectedFood(foodItem);
-        setSearchQuery(foodItem.name); // Update search to show the found item
+        setSearchQuery(foodItem.name);
+        setFoundFromLocalDB(true); // Mark as found locally for blue background
+
+        // Show brief success message for local finds
+        setScannerError("✅ Found in your local database!");
+        setTimeout(() => setScannerError(null), 2000);
         return;
       }
 
       // If not found locally, try OpenFoodFacts API
       if (localResponse.status === 404) {
-        setScannerError("Searching OpenFoodFacts database...");
+        setIsSearchingAPI(true);
+        setScannerError("🔍 Searching OpenFoodFacts database...");
 
         const openFoodFactsData = await fetchFromOpenFoodFacts(barcode);
 
@@ -139,7 +152,9 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
             await fetchFoodItems(); // Refresh the food items list
             setSelectedFood(newFoodItem);
             setSearchQuery(newFoodItem.name);
-            setScannerError(null);
+            setFoundFromLocalDB(false); // New items don't get blue background
+            setScannerError("✅ Product found and added to your database!");
+            setTimeout(() => setScannerError(null), 3000);
           } else {
             setScannerError(
               "Food found but failed to save. Please try adding manually."
@@ -156,6 +171,8 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
     } catch (error) {
       console.error("Error searching by barcode:", error);
       setScannerError("Error searching for barcode. Please try again.");
+    } finally {
+      setIsSearchingAPI(false);
     }
   };
 
@@ -168,6 +185,8 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
 
   const closeScannerError = () => {
     setScannerError(null);
+    setIsSearchingAPI(false);
+    setFoundFromLocalDB(false);
   };
 
   const handleManualBarcodeSubmit = async () => {
@@ -244,16 +263,26 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
                       key={item.id}
                       className={`p-3 rounded cursor-pointer border transition-colors ${
                         selectedFood?.id === item.id
-                          ? "bg-primary text-primary-foreground"
+                          ? foundFromLocalDB
+                            ? "bg-blue-500 text-white border-blue-600" // Blue background for local DB finds
+                            : "bg-primary text-primary-foreground"
                           : "hover:bg-muted"
                       }`}
-                      onClick={() => setSelectedFood(item)}
+                      onClick={() => {
+                        setSelectedFood(item);
+                        setFoundFromLocalDB(false); // Reset when manually selecting
+                      }}
                     >
                       <div className="font-medium">{item.name}</div>
                       <div className="text-sm opacity-80">
                         {item.calories} cal per 100g • P: {item.proteins}g • C:{" "}
                         {item.carbohydrates}g • F: {item.fat}g
                       </div>
+                      {selectedFood?.id === item.id && foundFromLocalDB && (
+                        <div className="text-xs mt-1 opacity-90">
+                          📱 Found in local database
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -343,35 +372,61 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
         <Dialog open={true} onOpenChange={closeScannerError}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Barcode Scan Result</DialogTitle>
+              <DialogTitle>
+                {isSearchingAPI ? (
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Searching...</span>
+                  </div>
+                ) : (
+                  "Barcode Scan Result"
+                )}
+              </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">{scannerError}</p>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={closeScannerError}>
-                  Cancel
-                </Button>
-                {scannerError.includes("No food item found") && (
-                  <Button
-                    onClick={() => {
-                      closeScannerError();
-                      setIsAddNewFoodOpen(true);
-                    }}
-                  >
-                    Add New Food
-                  </Button>
+              <div className="flex items-center space-x-2">
+                {isSearchingAPI && (
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
                 )}
-                {scannerError.includes("Unable to access camera") && (
-                  <Button
-                    onClick={() => {
-                      closeScannerError();
-                      openManualBarcodeInput();
-                    }}
-                  >
-                    Enter Manually
-                  </Button>
-                )}
+                <p
+                  className={`text-sm ${
+                    scannerError.includes("✅")
+                      ? "text-green-600 font-medium"
+                      : scannerError.includes("🔍")
+                      ? "text-blue-600"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {scannerError}
+                </p>
               </div>
+              {!isSearchingAPI && (
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={closeScannerError}>
+                    {scannerError.includes("✅") ? "Close" : "Cancel"}
+                  </Button>
+                  {scannerError.includes("No nutrition data found") && (
+                    <Button
+                      onClick={() => {
+                        closeScannerError();
+                        setIsAddNewFoodOpen(true);
+                      }}
+                    >
+                      Add New Food
+                    </Button>
+                  )}
+                  {scannerError.includes("Unable to access camera") && (
+                    <Button
+                      onClick={() => {
+                        closeScannerError();
+                        openManualBarcodeInput();
+                      }}
+                    >
+                      Enter Manually
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
