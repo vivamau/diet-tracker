@@ -8,6 +8,12 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
   const [mealItems, setMealItems] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [mealNutrition, setMealNutrition] = useState({
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+  });
 
   // Fetch meal items for this date and meal type
   const fetchMealItems = async () => {
@@ -22,6 +28,55 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
       setLoading(false);
     }
   };
+
+  // Calculate meal nutrition whenever meal items change
+  useEffect(() => {
+    const calculateNutrition = async () => {
+      if (!mealItems || mealItems.length === 0) {
+        setMealNutrition({
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+        });
+        return;
+      }
+
+      let totalCalories = 0;
+      let totalProtein = 0;
+      let totalCarbs = 0;
+      let totalFat = 0;
+
+      // Fetch nutrition for each meal item
+      for (const item of mealItems) {
+        try {
+          const response = await fetch(
+            `http://localhost:3001/api/food-items/${item.foodItemId}`
+          );
+          if (response.ok) {
+            const foodDetails = await response.json();
+            const multiplier = item.quantity / 100;
+
+            totalCalories += foodDetails.calories * multiplier;
+            totalProtein += foodDetails.proteins * multiplier;
+            totalCarbs += foodDetails.carbohydrates * multiplier;
+            totalFat += foodDetails.fat * multiplier;
+          }
+        } catch (error) {
+          console.error("Error fetching food details:", error);
+        }
+      }
+
+      setMealNutrition({
+        calories: Math.round(totalCalories),
+        protein: Math.round(totalProtein * 10) / 10,
+        carbs: Math.round(totalCarbs * 10) / 10,
+        fat: Math.round(totalFat * 10) / 10,
+      });
+    };
+
+    calculateNutrition();
+  }, [mealItems]);
 
   useEffect(() => {
     fetchMealItems();
@@ -78,17 +133,8 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
     }
   };
 
-  const calculateMealNutrition = () => {
-    // This will be implemented when we have food item details
-    return {
-      calories: 0,
-      protein: 0,
-      carbs: 0,
-      fat: 0,
-    };
-  };
-
-  const nutrition = calculateMealNutrition();
+  // Use the calculated meal nutrition
+  const nutrition = mealNutrition;
 
   return (
     <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-sm bg-gradient-to-br from-white to-gray-50/50">
