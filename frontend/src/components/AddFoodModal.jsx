@@ -190,7 +190,7 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-          <DialogHeader>
+          <DialogHeader className="pb-4">
             <DialogTitle>Add Food to Meal</DialogTitle>
             <DialogClose onClose={onClose} />
           </DialogHeader>

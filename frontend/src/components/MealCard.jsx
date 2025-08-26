@@ -91,7 +91,7 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
           variant="outline"
           size="sm"
           onClick={() => setIsAddModalOpen(true)}
-          className="hover:bg-primary hover:text-primary-foreground transition-colors shadow-sm"
+          className="bg-gradient-to-r from-green-500 to-green-600 text-primary-foreground hover:bg-primary hover:text-primary-foreground transition-colors shadow-sm"
         >
           <Plus className="h-4 w-4 mr-1" />
           Add Food
@@ -109,7 +109,6 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
           <>
             {mealItems.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-4xl mb-3 opacity-50">🍽️</div>
                 <div className="text-muted-foreground font-medium">
                   No food items added yet
                 </div>

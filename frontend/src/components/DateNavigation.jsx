@@ -36,11 +36,6 @@ const DateNavigation = ({ selectedDate, onDateChange }) => {
         <div className="text-sm text-blue-600 font-medium">
           {format(selectedDate, "yyyy")}
         </div>
-        {isToday && (
-          <div className="text-xs text-green-600 font-medium mt-1 bg-green-50 px-2 py-1 rounded-full inline-block">
-            Today
-          </div>
-        )}
       </div>
 
       <Button
@@ -61,6 +56,11 @@ const DateNavigation = ({ selectedDate, onDateChange }) => {
           <Calendar className="h-4 w-4 mr-2" />
           Today
         </Button>
+      )}
+      {isToday && (
+        <div className="text-xs text-green-600 font-medium mt-1 bg-green-50 px-2 py-1 rounded-full inline-block">
+          Today
+        </div>
       )}
     </div>
   );
