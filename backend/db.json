@@ -1,7 +1,26 @@
 {
   "meals": {
     "2025-08-26": {
-      "breakfast": [],
+      "breakfast": [
+        {
+          "id": "7b192df2-6065-42a8-b7ea-c76306b94210",
+          "foodItemId": "2748f852-4bb1-4bae-8dfc-34d383919d48",
+          "quantity": 100,
+          "addedAt": "2025-08-26T21:15:56.327Z"
+        },
+        {
+          "id": "bc56b1c1-3081-4bd2-88aa-f1d40f767066",
+          "foodItemId": "a3346b52-9405-40ad-9dc4-6bc4c30fb80f",
+          "quantity": 100,
+          "addedAt": "2025-08-26T21:16:01.076Z"
+        },
+        {
+          "id": "e8c36ff1-8019-496e-941b-3e7a05880918",
+          "foodItemId": "5734f2b4-c482-45e6-a348-068ed56ac9d3",
+          "quantity": 100,
+          "addedAt": "2025-08-26T21:16:08.941Z"
+        }
+      ],
       "lunch": [],
       "dinner": [],
       "snacks": []
@@ -41,18 +60,19 @@
       "unit": "grams",
       "createdAt": "2025-08-26T19:40:46.306Z"
     },
-    "daa3a680-d7d1-4a16-959c-ea49291fc45d": {
-      "id": "daa3a680-d7d1-4a16-959c-ea49291fc45d",
-      "name": "chicken",
-      "calories": 103,
-      "fat": 0,
-      "carbohydrates": 10,
-      "proteins": 40,
+    "a3346b52-9405-40ad-9dc4-6bc4c30fb80f": {
+      "id": "a3346b52-9405-40ad-9dc4-6bc4c30fb80f",
+      "name": "Soda",
+      "calories": 127,
+      "fat": 318,
+      "carbohydrates": 800,
+      "proteins": 300,
       "unit": "grams",
-      "createdAt": "2025-08-26T19:41:03.170Z"
+      "barcode": "5449000009746",
+      "createdAt": "2025-08-26T21:06:51.169Z"
     },
-    "8556256c-dd3d-4345-8b8a-4db92ab52773": {
-      "id": "8556256c-dd3d-4345-8b8a-4db92ab52773",
+    "85721dc9-7fdb-4dba-953b-50679c45f219": {
+      "id": "85721dc9-7fdb-4dba-953b-50679c45f219",
       "name": "Nutella",
       "calories": 539,
       "fat": 30.9,
@@ -60,7 +80,18 @@
       "proteins": 6.3,
       "unit": "grams",
       "barcode": "3017624010701",
-      "createdAt": "2025-08-26T20:06:08.355Z"
+      "createdAt": "2025-08-26T21:13:40.921Z"
+    },
+    "de275837-ee90-4715-9aad-d7c2ac73d1de": {
+      "id": "de275837-ee90-4715-9aad-d7c2ac73d1de",
+      "name": "Oreos",
+      "calories": 500,
+      "fat": 20.5,
+      "carbohydrates": 72.7,
+      "proteins": 4.55,
+      "unit": "grams",
+      "barcode": "019320015403",
+      "createdAt": "2025-08-26T21:14:59.914Z"
     }
   }
 }
