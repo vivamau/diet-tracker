@@ -12,9 +12,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import ConfirmModal from "./ui/confirm-modal";
+import { useToast } from "../hooks/useToast";
 import { apiGet, apiPost, apiPut, apiDelete } from "../lib/api";
 
-const UserProfile = ({ onBack }) => {
+const UserProfile = ({ onBack, onProfileUpdate }) => {
+  const { toast } = useToast();
   const [profile, setProfile] = useState({
     name: "",
     dailyTargets: {
@@ -29,8 +32,17 @@ const UserProfile = ({ onBack }) => {
   const [newWeightDate, setNewWeightDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [newWeightTime, setNewWeightTime] = useState(
+    new Date().toTimeString().substring(0, 5)
+  );
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   // Fetch user profile and weight data
   useEffect(() => {
@@ -72,27 +84,40 @@ const UserProfile = ({ onBack }) => {
       if (response.ok) {
         const updatedProfile = await response.json();
         setProfile(updatedProfile);
-        alert("Profile saved successfully!");
+        toast.success("Nutrition targets saved successfully!", {
+          title: "Profile Updated",
+        });
+        // Notify parent component about the profile update
+        if (onProfileUpdate) {
+          onProfileUpdate();
+        }
       } else {
-        alert("Failed to save profile");
+        toast.error("Failed to save profile. Please try again.", {
+          title: "Save Failed",
+        });
       }
     } catch (error) {
       console.error("Error saving profile:", error);
-      alert("Failed to save profile");
+      toast.error("Network error occurred while saving profile.", {
+        title: "Save Failed",
+      });
     } finally {
       setSaving(false);
     }
   };
 
   const addWeightEntry = async () => {
-    if (!newWeight || !newWeightDate) {
-      alert("Please enter both weight and date");
+    if (!newWeight || !newWeightDate || !newWeightTime) {
+      toast.warning("Please fill in all fields: weight, date, and time.", {
+        title: "Missing Information",
+      });
       return;
     }
 
     try {
       const response = await apiPost("http://localhost:3001/api/user/weight", {
         date: newWeightDate,
+        time: newWeightTime,
         weight: parseFloat(newWeight),
       });
 
@@ -100,19 +125,35 @@ const UserProfile = ({ onBack }) => {
         await fetchWeightEntries();
         setNewWeight("");
         setNewWeightDate(new Date().toISOString().split("T")[0]);
+        setNewWeightTime(new Date().toTimeString().substring(0, 5));
+        toast.success("Weight entry added successfully!", {
+          title: "Entry Added",
+        });
       } else {
-        alert("Failed to add weight entry");
+        toast.error("Failed to add weight entry. Please try again.", {
+          title: "Add Failed",
+        });
       }
     } catch (error) {
       console.error("Error adding weight entry:", error);
-      alert("Failed to add weight entry");
+      toast.error("Network error occurred while adding weight entry.", {
+        title: "Add Failed",
+      });
     }
   };
 
-  const deleteWeightEntry = async (date) => {
-    if (!confirm("Are you sure you want to delete this weight entry?")) {
-      return;
-    }
+  const showDeleteConfirmation = (date) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Weight Entry",
+      message:
+        "Are you sure you want to delete this weight entry? This action cannot be undone.",
+      onConfirm: () => confirmDeleteWeightEntry(date),
+    });
+  };
+
+  const confirmDeleteWeightEntry = async (date) => {
+    setConfirmModal({ ...confirmModal, isOpen: false });
 
     try {
       const response = await apiDelete(
@@ -120,12 +161,19 @@ const UserProfile = ({ onBack }) => {
       );
       if (response.ok) {
         await fetchWeightEntries();
+        toast.success("Weight entry deleted successfully!", {
+          title: "Entry Deleted",
+        });
       } else {
-        alert("Failed to delete weight entry");
+        toast.error("Failed to delete weight entry. Please try again.", {
+          title: "Delete Failed",
+        });
       }
     } catch (error) {
       console.error("Error deleting weight entry:", error);
-      alert("Failed to delete weight entry");
+      toast.error("Network error occurred while deleting weight entry.", {
+        title: "Delete Failed",
+      });
     }
   };
 
@@ -410,12 +458,18 @@ const UserProfile = ({ onBack }) => {
               {/* Add New Weight Entry */}
               <div className="border-t pt-4">
                 <h3 className="font-medium mb-3">Add Weight Entry</h3>
-                <div className="flex space-x-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                   <Input
                     type="date"
                     value={newWeightDate}
                     onChange={(e) => setNewWeightDate(e.target.value)}
-                    className="flex-1"
+                    className="w-full"
+                  />
+                  <Input
+                    type="time"
+                    value={newWeightTime}
+                    onChange={(e) => setNewWeightTime(e.target.value)}
+                    className="w-full"
                   />
                   <Input
                     type="number"
@@ -423,12 +477,13 @@ const UserProfile = ({ onBack }) => {
                     value={newWeight}
                     onChange={(e) => setNewWeight(e.target.value)}
                     placeholder="Weight (kg)"
-                    className="flex-1"
+                    className="w-full"
                   />
-                  <Button onClick={addWeightEntry}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
                 </div>
+                <Button onClick={addWeightEntry} className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Weight Entry
+                </Button>
               </div>
 
               {/* Weight Entries List */}
@@ -447,12 +502,17 @@ const UserProfile = ({ onBack }) => {
                             <div className="font-medium">{entry.weight}kg</div>
                             <div className="text-sm text-gray-600">
                               {new Date(entry.date).toLocaleDateString()}
+                              {entry.time && (
+                                <span className="ml-2 text-blue-600">
+                                  at {entry.time}
+                                </span>
+                              )}
                             </div>
                           </div>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteWeightEntry(entry.date)}
+                            onClick={() => showDeleteConfirmation(entry.date)}
                             className="text-gray-400 hover:text-red-500"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -474,6 +534,16 @@ const UserProfile = ({ onBack }) => {
           </Card>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type="danger"
+      />
     </div>
   );
 };

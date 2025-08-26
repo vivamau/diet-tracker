@@ -1,26 +1,7 @@
 {
   "meals": {
     "2025-08-26": {
-      "breakfast": [
-        {
-          "id": "7b192df2-6065-42a8-b7ea-c76306b94210",
-          "foodItemId": "2748f852-4bb1-4bae-8dfc-34d383919d48",
-          "quantity": 100,
-          "addedAt": "2025-08-26T21:15:56.327Z"
-        },
-        {
-          "id": "bc56b1c1-3081-4bd2-88aa-f1d40f767066",
-          "foodItemId": "a3346b52-9405-40ad-9dc4-6bc4c30fb80f",
-          "quantity": 100,
-          "addedAt": "2025-08-26T21:16:01.076Z"
-        },
-        {
-          "id": "e8c36ff1-8019-496e-941b-3e7a05880918",
-          "foodItemId": "5734f2b4-c482-45e6-a348-068ed56ac9d3",
-          "quantity": 100,
-          "addedAt": "2025-08-26T21:16:08.941Z"
-        }
-      ],
+      "breakfast": [],
       "lunch": [],
       "dinner": [],
       "snacks": []
@@ -92,6 +73,33 @@
       "unit": "grams",
       "barcode": "019320015403",
       "createdAt": "2025-08-26T21:14:59.914Z"
+    }
+  },
+  "userProfile": {
+    "name": "vivamau",
+    "dailyTargets": {
+      "calories": 1800,
+      "proteins": 130,
+      "carbohydrates": 250,
+      "fat": 65
+    },
+    "createdAt": "2025-08-26T21:48:15.226Z",
+    "updatedAt": "2025-08-26T22:27:23.891Z"
+  },
+  "weightEntries": {
+    "2025-08-26-1430": {
+      "id": "d6cfc40f-17ec-4de9-8a30-87425a1c0919",
+      "date": "2025-08-26",
+      "time": "14:30",
+      "weight": 72.3,
+      "createdAt": "2025-08-26T22:14:12.406Z"
+    },
+    "2025-08-26-0026": {
+      "id": "e89dfb26-6678-46c6-b468-3347e51be4b0",
+      "date": "2025-08-26",
+      "time": "00:26",
+      "weight": 87,
+      "createdAt": "2025-08-26T22:26:18.842Z"
     }
   }
 }

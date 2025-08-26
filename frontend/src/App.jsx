@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { Database, User } from "lucide-react";
 import DateNavigation from "./components/DateNavigation";
@@ -7,11 +7,30 @@ import NutritionSummary from "./components/NutritionSummary";
 import FoodDatabase from "./components/FoodDatabase";
 import UserProfile from "./components/UserProfile";
 import { Button } from "./components/ui/button";
+import { ToastContainer } from "./components/ui/toast";
+import { ToastProvider } from "./contexts/ToastContext";
+import { apiGet } from "./lib/api";
 
-function App() {
+function AppContent() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [currentPage, setCurrentPage] = useState("tracker"); // "tracker", "database", or "profile"
+  const [userProfile, setUserProfile] = useState({ name: "" });
+
+  // Fetch user profile on component mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await apiGet("http://localhost:3001/api/user/profile");
+        const data = await response.json();
+        setUserProfile(data);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   const handleDateChange = (newDate) => {
     setSelectedDate(newDate);
@@ -19,15 +38,7 @@ function App() {
 
   const handleMealUpdate = () => {
     // Trigger refresh of nutrition summary when meals are updated
-    console.log(
-      "App: handleMealUpdate called, current refreshTrigger:",
-      refreshTrigger
-    );
-    setRefreshTrigger((prev) => {
-      const newValue = prev + 1;
-      console.log("App: Setting refreshTrigger to:", newValue);
-      return newValue;
-    });
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   const formattedDate = format(selectedDate, "yyyy-MM-dd");
@@ -39,7 +50,26 @@ function App() {
 
   // Render User Profile page
   if (currentPage === "profile") {
-    return <UserProfile onBack={() => setCurrentPage("tracker")} />;
+    return (
+      <UserProfile
+        onBack={() => setCurrentPage("tracker")}
+        onProfileUpdate={() => {
+          // Refetch profile when it's updated
+          const fetchUserProfile = async () => {
+            try {
+              const response = await apiGet(
+                "http://localhost:3001/api/user/profile"
+              );
+              const data = await response.json();
+              setUserProfile(data);
+            } catch (error) {
+              console.error("Error fetching user profile:", error);
+            }
+          };
+          fetchUserProfile();
+        }}
+      />
+    );
   }
 
   // Render main Diet Tracker page
@@ -54,7 +84,7 @@ function App() {
               className="flex items-center space-x-2"
             >
               <User className="h-4 w-4" />
-              <span>Profile</span>
+              <span>{userProfile.name || "Profile"}</span>
             </Button>
             <Button
               variant="outline"
@@ -115,6 +145,15 @@ function App() {
         </main>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+      <ToastContainer />
+    </ToastProvider>
   );
 }
 

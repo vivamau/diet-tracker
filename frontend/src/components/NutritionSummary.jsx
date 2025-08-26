@@ -18,14 +18,24 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
   });
   const [loading, setLoading] = useState(false);
 
+  // Fetch user targets on component mount
   useEffect(() => {
-    console.log(
-      "NutritionSummary: Recalculating nutrition for date:",
-      date,
-      "refreshTrigger:",
-      refreshTrigger
-    );
+    const fetchUserTargets = async () => {
+      try {
+        const response = await apiGet("http://localhost:3001/api/user/profile");
+        const data = await response.json();
+        if (data.dailyTargets) {
+          setUserTargets(data.dailyTargets);
+        }
+      } catch (error) {
+        console.error("Error fetching user targets:", error);
+      }
+    };
 
+    fetchUserTargets();
+  }, []);
+
+  useEffect(() => {
     const calculateDailyNutrition = async () => {
       setLoading(true);
       try {
@@ -39,7 +49,6 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
         }
 
         const meals = await mealsResponse.json();
-        console.log("NutritionSummary: Fetched meals:", meals);
 
         let totalCalories = 0;
         let totalProteins = 0;
@@ -49,9 +58,6 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
         // Calculate nutrition for each meal type
         for (const mealType of ["breakfast", "lunch", "dinner", "snacks"]) {
           const mealItems = meals[mealType] || [];
-          console.log(
-            `NutritionSummary: Processing ${mealType} with ${mealItems.length} items`
-          );
 
           for (const item of mealItems) {
             try {
@@ -71,10 +77,6 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
                 totalProteins += itemProteins;
                 totalCarbohydrates += itemCarbs;
                 totalFat += itemFat;
-
-                console.log(
-                  `NutritionSummary: Added ${food.name} (${item.quantity}g): ${itemCalories} cal`
-                );
               } else {
                 console.error(
                   `Failed to fetch food item ${item.foodItemId}: ${foodResponse.status}`
@@ -96,10 +98,6 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
           fat: Math.round(totalFat * 10) / 10,
         };
 
-        console.log(
-          "NutritionSummary: Final nutrition data:",
-          newNutritionData
-        );
         setNutritionData(newNutritionData);
       } catch (error) {
         console.error("Error calculating daily nutrition:", error);

@@ -94,7 +94,6 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
         await fetchMealItems(); // Refresh the meal items
         setIsAddModalOpen(false);
         if (onMealUpdate) {
-          console.log("Triggering nutrition update after adding food");
           onMealUpdate(); // Notify parent to refresh nutrition summary
         }
       } else {
@@ -115,7 +114,6 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
       if (response.ok) {
         await fetchMealItems(); // Refresh the meal items
         if (onMealUpdate) {
-          console.log("Triggering nutrition update after removing food");
           onMealUpdate(); // Notify parent to refresh nutrition summary
         }
       } else {

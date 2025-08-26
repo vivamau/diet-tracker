@@ -25,7 +25,6 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
         const permission = await navigator.permissions.query({
           name: "camera",
         });
-        console.log("Camera permission status:", permission.state);
 
         if (permission.state === "granted") {
           setPermissionStatus("granted");
@@ -138,7 +137,6 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
       const videoDevices = allDevices.filter(
         (device) => device.kind === "videoinput"
       );
-      console.log("Available cameras:", videoDevices.length, videoDevices);
 
       if (videoDevices.length === 0) {
         throw new Error("No camera devices found");
@@ -156,15 +154,12 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
         selectedDeviceId = backCamera.deviceId;
       }
 
-      console.log("Selected camera:", selectedDeviceId);
-
       // Start barcode detection directly from the video element
       await readerRef.current.decodeFromVideoDevice(
         selectedDeviceId,
         videoRef.current,
         (result, err) => {
           if (result) {
-            console.log("Barcode detected:", result.text);
             onScan(result.text);
             stopScanning();
           }
@@ -174,8 +169,6 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
           }
         }
       );
-
-      console.log("Camera stream started successfully");
     } catch (err) {
       console.error("Scanning start error:", err);
       setIsScanning(false);

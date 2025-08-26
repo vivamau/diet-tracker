@@ -353,7 +353,7 @@ app.get("/api/user/weight", async (req, res) => {
 // Add/Update weight entry
 app.post("/api/user/weight", async (req, res) => {
   try {
-    const { date, weight } = req.body;
+    const { date, time, weight } = req.body;
 
     if (!date || !weight) {
       return res.status(400).json({ error: "Date and weight are required" });
@@ -364,12 +364,15 @@ app.post("/api/user/weight", async (req, res) => {
     const weightEntry = {
       id: uuidv4(),
       date: date,
+      time: time || null,
       weight: parseFloat(weight),
       createdAt: new Date().toISOString(),
     };
 
-    // Use date as key to ensure one entry per date
-    db.data.weightEntries[date] = weightEntry;
+    // Use date as key to allow multiple entries per date with different times
+    // If time is provided, use date-time as key, otherwise just date
+    const entryKey = time ? `${date}-${time.replace(":", "")}` : date;
+    db.data.weightEntries[entryKey] = weightEntry;
     await db.write();
 
     res.status(201).json(weightEntry);
