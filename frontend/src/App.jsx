@@ -1,12 +1,16 @@
 import { useState } from "react";
 import { format } from "date-fns";
+import { Database } from "lucide-react";
 import DateNavigation from "./components/DateNavigation";
 import MealCard from "./components/MealCard";
 import NutritionSummary from "./components/NutritionSummary";
+import FoodDatabase from "./components/FoodDatabase";
+import { Button } from "./components/ui/button";
 
 function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [currentPage, setCurrentPage] = useState("tracker"); // "tracker" or "database"
 
   const handleDateChange = (newDate) => {
     setSelectedDate(newDate);
@@ -27,10 +31,27 @@ function App() {
 
   const formattedDate = format(selectedDate, "yyyy-MM-dd");
 
+  // Render Food Database page
+  if (currentPage === "database") {
+    return <FoodDatabase onBack={() => setCurrentPage("tracker")} />;
+  }
+
+  // Render main Diet Tracker page
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto p-6 max-w-7xl">
         <header className="mb-12">
+          <div className="flex justify-end mb-4">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage("database")}
+              className="flex items-center space-x-2"
+            >
+              <Database className="h-4 w-4" />
+              <span>Food Database</span>
+            </Button>
+          </div>
+
           <div className="text-center mb-8">
             <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
               Diet Management
@@ -54,25 +75,25 @@ function App() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <MealCard
               mealType="breakfast"
-              title="Breakfast"
+              title="🌅 Breakfast"
               date={formattedDate}
               onMealUpdate={handleMealUpdate}
             />
             <MealCard
               mealType="lunch"
-              title="Lunch"
+              title="☀️ Lunch"
               date={formattedDate}
               onMealUpdate={handleMealUpdate}
             />
             <MealCard
               mealType="dinner"
-              title="Dinner"
+              title="🌙 Dinner"
               date={formattedDate}
               onMealUpdate={handleMealUpdate}
             />
             <MealCard
               mealType="snacks"
-              title="Snacks"
+              title="🍎 Snacks"
               date={formattedDate}
               onMealUpdate={handleMealUpdate}
             />
