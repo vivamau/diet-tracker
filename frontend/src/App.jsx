@@ -1,16 +1,17 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Database } from "lucide-react";
+import { Database, User } from "lucide-react";
 import DateNavigation from "./components/DateNavigation";
 import MealCard from "./components/MealCard";
 import NutritionSummary from "./components/NutritionSummary";
 import FoodDatabase from "./components/FoodDatabase";
+import UserProfile from "./components/UserProfile";
 import { Button } from "./components/ui/button";
 
 function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [currentPage, setCurrentPage] = useState("tracker"); // "tracker" or "database"
+  const [currentPage, setCurrentPage] = useState("tracker"); // "tracker", "database", or "profile"
 
   const handleDateChange = (newDate) => {
     setSelectedDate(newDate);
@@ -36,12 +37,25 @@ function App() {
     return <FoodDatabase onBack={() => setCurrentPage("tracker")} />;
   }
 
+  // Render User Profile page
+  if (currentPage === "profile") {
+    return <UserProfile onBack={() => setCurrentPage("tracker")} />;
+  }
+
   // Render main Diet Tracker page
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="container mx-auto p-6 max-w-7xl">
         <header className="mb-12">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end mb-4 space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage("profile")}
+              className="flex items-center space-x-2"
+            >
+              <User className="h-4 w-4" />
+              <span>Profile</span>
+            </Button>
             <Button
               variant="outline"
               onClick={() => setCurrentPage("database")}

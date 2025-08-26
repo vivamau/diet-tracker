@@ -10,6 +10,12 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
     carbohydrates: 0,
     fat: 0,
   });
+  const [userTargets, setUserTargets] = useState({
+    calories: 2000,
+    proteins: 150,
+    carbohydrates: 250,
+    fat: 65,
+  });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -126,13 +132,8 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
     );
   }
 
-  // Daily targets (these could be made configurable)
-  const targets = {
-    calories: 2000,
-    proteins: 150,
-    carbohydrates: 250,
-    fat: 65,
-  };
+  // Use user's custom targets
+  const targets = userTargets;
 
   const NutritionCard = ({
     title,

@@ -45,6 +45,16 @@ export const apiPost = (url, data) =>
     body: JSON.stringify(data),
   });
 
+// Convenience function for PUT requests
+export const apiPut = (url, data) =>
+  fetchWithRetry(url, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
 // Convenience function for DELETE requests
 export const apiDelete = (url) =>
   fetchWithRetry(url, {

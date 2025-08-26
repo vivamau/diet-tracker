@@ -15,7 +15,12 @@ app.use(express.json());
 // Database setup
 const dbFile = join(__dirname, "db.json");
 const adapter = new JSONFile(dbFile);
-const db = new Low(adapter, { meals: {}, foodItems: {} });
+const db = new Low(adapter, {
+  meals: {},
+  foodItems: {},
+  userProfile: null,
+  weightEntries: {},
+});
 
 // Initialize database with default structure
 async function initDb() {
@@ -274,6 +279,121 @@ app.get("/api/food-items/barcode/:barcode", async (req, res) => {
     res.json(foodItem);
   } catch (error) {
     res.status(500).json({ error: "Failed to search by barcode" });
+  }
+});
+
+// Get user profile
+app.get("/api/user/profile", async (req, res) => {
+  try {
+    await db.read();
+
+    // Return default profile if none exists
+    const defaultProfile = {
+      name: "",
+      dailyTargets: {
+        calories: 2000,
+        proteins: 150,
+        carbohydrates: 250,
+        fat: 65,
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    res.json(db.data.userProfile || defaultProfile);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch user profile" });
+  }
+});
+
+// Update user profile
+app.put("/api/user/profile", async (req, res) => {
+  try {
+    const { name, dailyTargets } = req.body;
+    await db.read();
+
+    const profile = {
+      name: name || "",
+      dailyTargets: {
+        calories: parseFloat(dailyTargets?.calories) || 2000,
+        proteins: parseFloat(dailyTargets?.proteins) || 150,
+        carbohydrates: parseFloat(dailyTargets?.carbohydrates) || 250,
+        fat: parseFloat(dailyTargets?.fat) || 65,
+      },
+      createdAt: db.data.userProfile?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    db.data.userProfile = profile;
+    await db.write();
+
+    res.json(profile);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update user profile" });
+  }
+});
+
+// Get weight entries
+app.get("/api/user/weight", async (req, res) => {
+  try {
+    await db.read();
+    const weightEntries = db.data.weightEntries || {};
+
+    // Convert to array and sort by date
+    const entries = Object.values(weightEntries).sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+
+    res.json(entries);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch weight entries" });
+  }
+});
+
+// Add/Update weight entry
+app.post("/api/user/weight", async (req, res) => {
+  try {
+    const { date, weight } = req.body;
+
+    if (!date || !weight) {
+      return res.status(400).json({ error: "Date and weight are required" });
+    }
+
+    await db.read();
+
+    const weightEntry = {
+      id: uuidv4(),
+      date: date,
+      weight: parseFloat(weight),
+      createdAt: new Date().toISOString(),
+    };
+
+    // Use date as key to ensure one entry per date
+    db.data.weightEntries[date] = weightEntry;
+    await db.write();
+
+    res.status(201).json(weightEntry);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to save weight entry" });
+  }
+});
+
+// Delete weight entry
+app.delete("/api/user/weight/:date", async (req, res) => {
+  try {
+    const { date } = req.params;
+    await db.read();
+
+    if (!db.data.weightEntries[date]) {
+      return res.status(404).json({ error: "Weight entry not found" });
+    }
+
+    delete db.data.weightEntries[date];
+    await db.write();
+
+    res.json({ message: "Weight entry deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete weight entry" });
   }
 });
 
