@@ -3,6 +3,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import AddFoodModal from "./AddFoodModal";
+import { apiGet, apiPost, apiDelete } from "../lib/api";
 
 const MealCard = ({ mealType, title, date, onMealUpdate }) => {
   const [mealItems, setMealItems] = useState([]);
@@ -19,7 +20,7 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
   const fetchMealItems = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3001/api/meals/${date}`);
+      const response = await apiGet(`http://localhost:3001/api/meals/${date}`);
       const data = await response.json();
       setMealItems(data[mealType] || []);
     } catch (error) {
@@ -50,7 +51,7 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
       // Fetch nutrition for each meal item
       for (const item of mealItems) {
         try {
-          const response = await fetch(
+          const response = await apiGet(
             `http://localhost:3001/api/food-items/${item.foodItemId}`
           );
           if (response.ok) {
@@ -84,15 +85,9 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
 
   const handleAddFood = async (foodItemId, quantity) => {
     try {
-      const response = await fetch(
+      const response = await apiPost(
         `http://localhost:3001/api/meals/${date}/${mealType}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ foodItemId, quantity }),
-        }
+        { foodItemId, quantity }
       );
 
       if (response.ok) {
@@ -107,16 +102,14 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
       }
     } catch (error) {
       console.error("Error adding food item:", error);
+      alert("Failed to add food item. Please try again.");
     }
   };
 
   const handleRemoveFood = async (mealEntryId) => {
     try {
-      const response = await fetch(
-        `http://localhost:3001/api/meals/${date}/${mealType}/${mealEntryId}`,
-        {
-          method: "DELETE",
-        }
+      const response = await apiDelete(
+        `http://localhost:3001/api/meals/${date}/${mealType}/${mealEntryId}`
       );
 
       if (response.ok) {
@@ -130,6 +123,7 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
       }
     } catch (error) {
       console.error("Error removing food item:", error);
+      alert("Failed to remove food item. Please try again.");
     }
   };
 
@@ -233,7 +227,7 @@ const MealItem = ({ item, onRemove }) => {
   useEffect(() => {
     const fetchFoodDetails = async () => {
       try {
-        const response = await fetch(
+        const response = await apiGet(
           `http://localhost:3001/api/food-items/${item.foodItemId}`
         );
         if (response.ok) {

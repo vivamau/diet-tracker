@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { TrendingUp, Zap, Beef, Wheat, Droplet } from "lucide-react";
+import { apiGet } from "../lib/api";
 
 const NutritionSummary = ({ date, refreshTrigger }) => {
   const [nutritionData, setNutritionData] = useState({
@@ -23,7 +24,7 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
       setLoading(true);
       try {
         // Fetch meals for the date
-        const mealsResponse = await fetch(
+        const mealsResponse = await apiGet(
           `http://localhost:3001/api/meals/${date}`
         );
 
