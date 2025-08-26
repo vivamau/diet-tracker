@@ -12,6 +12,13 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log(
+      "NutritionSummary: Recalculating nutrition for date:",
+      date,
+      "refreshTrigger:",
+      refreshTrigger
+    );
+
     const calculateDailyNutrition = async () => {
       setLoading(true);
       try {
@@ -19,7 +26,13 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
         const mealsResponse = await fetch(
           `http://localhost:3001/api/meals/${date}`
         );
+
+        if (!mealsResponse.ok) {
+          throw new Error(`Failed to fetch meals: ${mealsResponse.status}`);
+        }
+
         const meals = await mealsResponse.json();
+        console.log("NutritionSummary: Fetched meals:", meals);
 
         let totalCalories = 0;
         let totalProteins = 0;
@@ -29,6 +42,9 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
         // Calculate nutrition for each meal type
         for (const mealType of ["breakfast", "lunch", "dinner", "snacks"]) {
           const mealItems = meals[mealType] || [];
+          console.log(
+            `NutritionSummary: Processing ${mealType} with ${mealItems.length} items`
+          );
 
           for (const item of mealItems) {
             try {
@@ -39,10 +55,23 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
                 const food = await foodResponse.json();
                 const multiplier = item.quantity / 100; // Convert to per gram basis
 
-                totalCalories += food.calories * multiplier;
-                totalProteins += food.proteins * multiplier;
-                totalCarbohydrates += food.carbohydrates * multiplier;
-                totalFat += food.fat * multiplier;
+                const itemCalories = food.calories * multiplier;
+                const itemProteins = food.proteins * multiplier;
+                const itemCarbs = food.carbohydrates * multiplier;
+                const itemFat = food.fat * multiplier;
+
+                totalCalories += itemCalories;
+                totalProteins += itemProteins;
+                totalCarbohydrates += itemCarbs;
+                totalFat += itemFat;
+
+                console.log(
+                  `NutritionSummary: Added ${food.name} (${item.quantity}g): ${itemCalories} cal`
+                );
+              } else {
+                console.error(
+                  `Failed to fetch food item ${item.foodItemId}: ${foodResponse.status}`
+                );
               }
             } catch (error) {
               console.error(
@@ -53,12 +82,18 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
           }
         }
 
-        setNutritionData({
+        const newNutritionData = {
           calories: Math.round(totalCalories),
           proteins: Math.round(totalProteins * 10) / 10,
           carbohydrates: Math.round(totalCarbohydrates * 10) / 10,
           fat: Math.round(totalFat * 10) / 10,
-        });
+        };
+
+        console.log(
+          "NutritionSummary: Final nutrition data:",
+          newNutritionData
+        );
+        setNutritionData(newNutritionData);
       } catch (error) {
         console.error("Error calculating daily nutrition:", error);
       } finally {

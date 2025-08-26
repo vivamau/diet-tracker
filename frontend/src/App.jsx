@@ -14,7 +14,15 @@ function App() {
 
   const handleMealUpdate = () => {
     // Trigger refresh of nutrition summary when meals are updated
-    setRefreshTrigger((prev) => prev + 1);
+    console.log(
+      "App: handleMealUpdate called, current refreshTrigger:",
+      refreshTrigger
+    );
+    setRefreshTrigger((prev) => {
+      const newValue = prev + 1;
+      console.log("App: Setting refreshTrigger to:", newValue);
+      return newValue;
+    });
   };
 
   const formattedDate = format(selectedDate, "yyyy-MM-dd");
