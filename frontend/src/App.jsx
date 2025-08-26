@@ -46,25 +46,25 @@ function App() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <MealCard
               mealType="breakfast"
-              title="🌅 Breakfast"
+              title="Breakfast"
               date={formattedDate}
               onMealUpdate={handleMealUpdate}
             />
             <MealCard
               mealType="lunch"
-              title="☀️ Lunch"
+              title="Lunch"
               date={formattedDate}
               onMealUpdate={handleMealUpdate}
             />
             <MealCard
               mealType="dinner"
-              title="🌙 Dinner"
+              title="Dinner"
               date={formattedDate}
               onMealUpdate={handleMealUpdate}
             />
             <MealCard
               mealType="snacks"
-              title="🍎 Snacks"
+              title="Snacks"
               date={formattedDate}
               onMealUpdate={handleMealUpdate}
             />
