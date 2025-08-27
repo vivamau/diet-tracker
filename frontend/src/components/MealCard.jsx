@@ -20,7 +20,9 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
   const fetchMealItems = async () => {
     try {
       setLoading(true);
-      const response = await apiGet(`http://localhost:3001/api/meals/${date}`);
+      const response = await apiGet(
+        import.meta.env.VITE_URL_BE + `/api/meals/${date}`
+      );
       const data = await response.json();
       setMealItems(data[mealType] || []);
     } catch (error) {
@@ -52,7 +54,7 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
       for (const item of mealItems) {
         try {
           const response = await apiGet(
-            `http://localhost:3001/api/food-items/${item.foodItemId}`
+            import.meta.env.VITE_URL_BE + `/api/food-items/${item.foodItemId}`
           );
           if (response.ok) {
             const foodDetails = await response.json();
@@ -86,7 +88,7 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
   const handleAddFood = async (foodItemId, quantity) => {
     try {
       const response = await apiPost(
-        `http://localhost:3001/api/meals/${date}/${mealType}`,
+        import.meta.env.VITE_URL_BE + `/api/meals/${date}/${mealType}`,
         { foodItemId, quantity }
       );
 
@@ -108,7 +110,8 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
   const handleRemoveFood = async (mealEntryId) => {
     try {
       const response = await apiDelete(
-        `http://localhost:3001/api/meals/${date}/${mealType}/${mealEntryId}`
+        import.meta.env.VITE_URL_BE +
+          `/api/meals/${date}/${mealType}/${mealEntryId}`
       );
 
       if (response.ok) {
@@ -226,7 +229,7 @@ const MealItem = ({ item, onRemove }) => {
     const fetchFoodDetails = async () => {
       try {
         const response = await apiGet(
-          `http://localhost:3001/api/food-items/${item.foodItemId}`
+          import.meta.env.VITE_URL_BE + `/api/food-items/${item.foodItemId}`
         );
         if (response.ok) {
           const data = await response.json();

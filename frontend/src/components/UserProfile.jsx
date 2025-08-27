@@ -53,7 +53,9 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-      const response = await apiGet("http://localhost:3001/api/user/profile");
+      const response = await apiGet(
+        import.meta.env.VITE_URL_BE + "/api/user/profile"
+      );
       const data = await response.json();
       setProfile(data);
     } catch (error) {
@@ -65,7 +67,9 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
 
   const fetchWeightEntries = async () => {
     try {
-      const response = await apiGet("http://localhost:3001/api/user/weight");
+      const response = await apiGet(
+        import.meta.env.VITE_URL_BE + "/api/user/weight"
+      );
       const data = await response.json();
       setWeightEntries(data);
     } catch (error) {
@@ -77,7 +81,7 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
     try {
       setSaving(true);
       const response = await apiPut(
-        "http://localhost:3001/api/user/profile",
+        import.meta.env.VITE_URL_BE + "/api/user/profile",
         profile
       );
 
@@ -115,11 +119,14 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
     }
 
     try {
-      const response = await apiPost("http://localhost:3001/api/user/weight", {
-        date: newWeightDate,
-        time: newWeightTime,
-        weight: parseFloat(newWeight),
-      });
+      const response = await apiPost(
+        import.meta.env.VITE_URL_BE + "/api/user/weight",
+        {
+          date: newWeightDate,
+          time: newWeightTime,
+          weight: parseFloat(newWeight),
+        }
+      );
 
       if (response.ok) {
         await fetchWeightEntries();
@@ -157,7 +164,7 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
 
     try {
       const response = await apiDelete(
-        `http://localhost:3001/api/user/weight/${date}`
+        import.meta.env.VITE_URL_BE + `/api/user/weight/${date}`
       );
       if (response.ok) {
         await fetchWeightEntries();

@@ -38,20 +38,23 @@ const AddNewFoodModal = ({ isOpen, onClose, onFoodAdded }) => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("http://localhost:3001/api/food-items", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          calories: parseFloat(formData.calories),
-          proteins: parseFloat(formData.proteins) || 0,
-          carbohydrates: parseFloat(formData.carbohydrates) || 0,
-          fat: parseFloat(formData.fat) || 0,
-          barcode: formData.barcode || null,
-        }),
-      });
+      const response = await fetch(
+        import.meta.env.VITE_URL_BE + "/api/food-items",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            calories: parseFloat(formData.calories),
+            proteins: parseFloat(formData.proteins) || 0,
+            carbohydrates: parseFloat(formData.carbohydrates) || 0,
+            fat: parseFloat(formData.fat) || 0,
+            barcode: formData.barcode || null,
+          }),
+        }
+      );
 
       if (response.ok) {
         // Reset form

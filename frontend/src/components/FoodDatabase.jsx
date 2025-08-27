@@ -17,7 +17,9 @@ const FoodDatabase = ({ onBack }) => {
   const fetchFoodItems = async () => {
     try {
       setLoading(true);
-      const response = await apiGet("http://localhost:3001/api/food-items");
+      const response = await apiGet(
+        import.meta.env.VITE_URL_BE + "/api/food-items"
+      );
       const data = await response.json();
       setFoodItems(data);
       setFilteredItems(data);
@@ -58,7 +60,7 @@ const FoodDatabase = ({ onBack }) => {
 
     try {
       const response = await apiDelete(
-        `http://localhost:3001/api/food-items/${foodId}`
+        import.meta.env.VITE_URL_BE + `/api/food-items/${foodId}`
       );
       if (response.ok) {
         await fetchFoodItems(); // Refresh the list

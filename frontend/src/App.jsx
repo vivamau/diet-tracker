@@ -60,7 +60,7 @@ function AppContent() {
           const fetchUserProfile = async () => {
             try {
               const response = await apiGet(
-                import.meta.VITE_URL_BE + "/api/user/profile"
+                import.meta.env.VITE_URL_BE + "/api/user/profile"
               );
               const data = await response.json();
               setUserProfile(data);

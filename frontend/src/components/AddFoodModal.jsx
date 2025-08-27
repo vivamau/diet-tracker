@@ -114,7 +114,7 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
     try {
       // First, search for food item in our local database
       const localResponse = await fetch(
-        `http://localhost:3001/api/food-items/barcode/${barcode}`
+        import.meta.env.VITE_URL_BE + `/api/food-items/barcode/${barcode}`
       );
 
       if (localResponse.ok) {
@@ -139,7 +139,7 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
         if (openFoodFactsData) {
           // Automatically create the food item in our database
           const createResponse = await fetch(
-            "http://localhost:3001/api/food-items",
+            import.meta.env.VITE_URL_BE + "/api/food-items",
             {
               method: "POST",
               headers: {

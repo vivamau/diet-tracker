@@ -22,7 +22,9 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
   useEffect(() => {
     const fetchUserTargets = async () => {
       try {
-        const response = await apiGet("http://localhost:3001/api/user/profile");
+        const response = await apiGet(
+          import.meta.env.VITE_URL_BE + "/api/user/profile"
+        );
         const data = await response.json();
         if (data.dailyTargets) {
           setUserTargets(data.dailyTargets);
@@ -41,7 +43,7 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
       try {
         // Fetch meals for the date
         const mealsResponse = await apiGet(
-          `http://localhost:3001/api/meals/${date}`
+          import.meta.env.VITE_URL_BE + `/api/meals/${date}`
         );
 
         if (!mealsResponse.ok) {
@@ -62,7 +64,8 @@ const NutritionSummary = ({ date, refreshTrigger }) => {
           for (const item of mealItems) {
             try {
               const foodResponse = await fetch(
-                `http://localhost:3001/api/food-items/${item.foodItemId}`
+                import.meta.env.VITE_URL_BE +
+                  `/api/food-items/${item.foodItemId}`
               );
               if (foodResponse.ok) {
                 const food = await foodResponse.json();
