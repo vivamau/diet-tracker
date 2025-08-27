@@ -87,6 +87,12 @@ cd ../frontend
 npm install
 ```
 
+### 4. Configuration
+
+In the frontend folder, rename the **.env.sample** file, as **.env** and specify where you have deployed your backend.
+
+In the backend folder, rename the **db_sample.json** file, as **db.json** to start populating with your information.
+
 ## 🏃‍♂️ Running the Application
 
 ### Development Mode (Recommended)

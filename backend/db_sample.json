@@ -1,0 +1,156 @@
+{
+  "meals": {
+    "2025-08-26": {
+      "breakfast": [],
+      "lunch": [],
+      "dinner": [],
+      "snacks": []
+    },
+    "2025-08-27": {
+      "breakfast": [
+        {
+          "id": "45441340-b2be-412d-946b-9e8acc5d33ec",
+          "foodItemId": "85721dc9-7fdb-4dba-953b-50679c45f219",
+          "quantity": 100,
+          "addedAt": "2025-08-27T21:32:05.217Z"
+        }
+      ],
+      "lunch": [],
+      "dinner": [],
+      "snacks": [
+        {
+          "id": "7a43a4cf-3848-4665-baa2-623d02f490c3",
+          "foodItemId": "de275837-ee90-4715-9aad-d7c2ac73d1de",
+          "quantity": 100,
+          "addedAt": "2025-08-27T21:32:13.678Z"
+        },
+        {
+          "id": "8280ebf9-9146-455b-be77-e0adad1a1060",
+          "foodItemId": "43fd8d38-b57d-4462-9f43-1e917eee5764",
+          "quantity": 1000,
+          "addedAt": "2025-08-27T21:32:26.143Z"
+        }
+      ]
+    }
+  },
+  "foodItems": {
+    "85721dc9-7fdb-4dba-953b-50679c45f219": {
+      "id": "85721dc9-7fdb-4dba-953b-50679c45f219",
+      "name": "Nutella",
+      "calories": 539,
+      "fat": 30.9,
+      "carbohydrates": 57.5,
+      "proteins": 6.3,
+      "unit": "grams",
+      "barcode": "3017624010701",
+      "createdAt": "2025-08-26T21:13:40.921Z"
+    },
+    "de275837-ee90-4715-9aad-d7c2ac73d1de": {
+      "id": "de275837-ee90-4715-9aad-d7c2ac73d1de",
+      "name": "Oreos",
+      "calories": 500,
+      "fat": 20.5,
+      "carbohydrates": 72.7,
+      "proteins": 4.55,
+      "unit": "grams",
+      "barcode": "019320015403",
+      "createdAt": "2025-08-26T21:14:59.914Z"
+    },
+    "43fd8d38-b57d-4462-9f43-1e917eee5764": {
+      "id": "43fd8d38-b57d-4462-9f43-1e917eee5764",
+      "name": "Asia noodles",
+      "calories": 82,
+      "fat": 3.7,
+      "carbohydrates": 10,
+      "proteins": 1.7,
+      "unit": "grams",
+      "barcode": "8720182862303",
+      "createdAt": "2025-08-27T21:11:23.664Z"
+    }
+  },
+  "userProfile": {
+    "name": "vivamau",
+    "initialWeight": 93,
+    "height": 182,
+    "dailyTargets": {
+      "calories": 1800,
+      "proteins": 130,
+      "carbohydrates": 250,
+      "fat": 65
+    },
+    "createdAt": "2025-08-26T21:48:15.226Z",
+    "updatedAt": "2025-08-27T22:01:22.457Z"
+  },
+  "weightEntries": {
+    "2025-08-27-0824": {
+      "id": "5d54cbdd-a39d-48fd-9cc1-c716a2b2bf5b",
+      "date": "2025-08-27",
+      "time": "08:24",
+      "weight": 87,
+      "createdAt": "2025-08-27T21:24:33.147Z"
+    },
+    "2025-08-26-0824": {
+      "id": "071c0234-5ac5-405a-89a8-13b817e3afe1",
+      "date": "2025-08-26",
+      "time": "08:24",
+      "weight": 87,
+      "createdAt": "2025-08-27T21:24:45.055Z"
+    },
+    "2025-08-25-0824": {
+      "id": "116f976f-b8b1-4abe-870d-d7bcbac43c65",
+      "date": "2025-08-25",
+      "time": "08:24",
+      "weight": 87,
+      "createdAt": "2025-08-27T21:25:24.130Z"
+    },
+    "2025-08-24-0825": {
+      "id": "700adbc8-21ee-41d1-b601-df9d49e084bd",
+      "date": "2025-08-24",
+      "time": "08:25",
+      "weight": 87.4,
+      "createdAt": "2025-08-27T21:25:41.847Z"
+    },
+    "2025-08-23-0825": {
+      "id": "787ba474-923c-421b-bc47-c8fb21963e76",
+      "date": "2025-08-23",
+      "time": "08:25",
+      "weight": 87.1,
+      "createdAt": "2025-08-27T21:26:17.725Z"
+    },
+    "2025-08-22-0826": {
+      "id": "4ab9c09a-55c9-4bb7-b1d2-927afa517476",
+      "date": "2025-08-22",
+      "time": "08:26",
+      "weight": 87.4,
+      "createdAt": "2025-08-27T21:26:51.715Z"
+    },
+    "2025-08-21-0826": {
+      "id": "0f9f9729-7c68-4cc0-a53a-4c07baea7913",
+      "date": "2025-08-21",
+      "time": "08:26",
+      "weight": 87.9,
+      "createdAt": "2025-08-27T21:27:07.632Z"
+    },
+    "2025-08-20-0827": {
+      "id": "5d4877df-a221-46e4-85e5-7b9c2430e930",
+      "date": "2025-08-20",
+      "time": "08:27",
+      "weight": 88.1,
+      "createdAt": "2025-08-27T21:27:37.377Z"
+    },
+    "2025-08-19-0900": {
+      "id": "1d8b6a98-2ce9-43bd-bd39-11ca0fa48262",
+      "date": "2025-08-19",
+      "time": "09:00",
+      "weight": 88.5,
+      "createdAt": "2025-08-27T21:27:55.495Z"
+    },
+    "2025-08-18-0827": {
+      "id": "c9cfcc65-c96c-4d88-a85b-65c8dc633e8b",
+      "date": "2025-08-18",
+      "time": "08:27",
+      "weight": 89.9,
+      "createdAt": "2025-08-27T21:28:12.012Z"
+    }
+  }
+}
