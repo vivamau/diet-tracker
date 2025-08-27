@@ -24,12 +24,14 @@ const AddFoodModal = ({ isOpen, onClose, onAddFood }) => {
   const [showManualBarcodeInput, setShowManualBarcodeInput] = useState(false);
   const [manualBarcode, setManualBarcode] = useState("");
   const [isSearchingAPI, setIsSearchingAPI] = useState(false);
-  const [foundFromLocalDB, setFoundFromLocalDB] = useState(false);
+  const [foundFromLocalDB, setFoundFromLocalDB] = useState(false); // Backend URL
 
   // Fetch all food items
   const fetchFoodItems = async () => {
     try {
-      const response = await fetch("http://localhost:3001/api/food-items");
+      const response = await fetch(
+        import.meta.env.VITE_URL_BE + "/api/food-items"
+      );
       const data = await response.json();
       setFoodItems(data);
       setFilteredItems(data);

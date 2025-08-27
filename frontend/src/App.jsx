@@ -21,7 +21,9 @@ function AppContent() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await apiGet("http://localhost:3001/api/user/profile");
+        const response = await apiGet(
+          import.meta.env.VITE_URL_BE + "/api/user/profile"
+        );
         const data = await response.json();
         setUserProfile(data);
       } catch (error) {
@@ -58,7 +60,7 @@ function AppContent() {
           const fetchUserProfile = async () => {
             try {
               const response = await apiGet(
-                "http://localhost:3001/api/user/profile"
+                import.meta.VITE_URL_BE + "/api/user/profile"
               );
               const data = await response.json();
               setUserProfile(data);
