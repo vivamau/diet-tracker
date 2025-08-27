@@ -16,7 +16,7 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
     return () => {
       stopScanning();
     };
-  }, []);
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const checkCameraPermission = async () => {
     try {
