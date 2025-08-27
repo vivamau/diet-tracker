@@ -8,11 +8,17 @@ import {
   Trash2,
   TrendingUp,
   TrendingDown,
+  Download,
+  Edit3,
+  Check,
+  X,
+  Ruler,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import ConfirmModal from "./ui/confirm-modal";
+import WeightTrendChart from "./WeightTrendChart";
 import { useToast } from "../hooks/useToast";
 import { apiGet, apiPost, apiPut, apiDelete } from "../lib/api";
 
@@ -20,6 +26,8 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
   const { toast } = useToast();
   const [profile, setProfile] = useState({
     name: "",
+    initialWeight: null,
+    height: null,
     dailyTargets: {
       calories: 2000,
       proteins: 150,
@@ -37,6 +45,12 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
   );
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingPersonalInfo, setEditingPersonalInfo] = useState(false);
+  const [tempPersonalInfo, setTempPersonalInfo] = useState({
+    name: "",
+    initialWeight: null,
+    height: null,
+  });
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     title: "",
@@ -77,7 +91,7 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
     }
   };
 
-  const saveProfile = async () => {
+  const saveProfile = async (isPersonalInfo = false) => {
     try {
       setSaving(true);
       const response = await apiPut(
@@ -88,7 +102,10 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
       if (response.ok) {
         const updatedProfile = await response.json();
         setProfile(updatedProfile);
-        toast.success("Nutrition targets saved successfully!", {
+        const message = isPersonalInfo
+          ? "Personal information saved successfully!"
+          : "Nutrition targets saved successfully!";
+        toast.success(message, {
           title: "Profile Updated",
         });
         // Notify parent component about the profile update
@@ -108,6 +125,92 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const startEditingPersonalInfo = () => {
+    setTempPersonalInfo({
+      name: profile.name,
+      initialWeight: profile.initialWeight,
+      height: profile.height,
+    });
+    setEditingPersonalInfo(true);
+  };
+
+  const cancelEditingPersonalInfo = () => {
+    setEditingPersonalInfo(false);
+    setTempPersonalInfo({
+      name: "",
+      initialWeight: null,
+      height: null,
+    });
+  };
+
+  const showPersonalInfoConfirmation = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Save Personal Information",
+      message:
+        "Are you sure you want to save these changes to your personal information?",
+      onConfirm: () => confirmSavePersonalInfo(),
+    });
+  };
+
+  const confirmSavePersonalInfo = async () => {
+    setConfirmModal({ ...confirmModal, isOpen: false });
+
+    // Update profile with temp values
+    setProfile((prev) => ({
+      ...prev,
+      name: tempPersonalInfo.name,
+      initialWeight: tempPersonalInfo.initialWeight,
+      height: tempPersonalInfo.height,
+    }));
+
+    // Save the updated profile
+    const updatedProfile = {
+      ...profile,
+      name: tempPersonalInfo.name,
+      initialWeight: tempPersonalInfo.initialWeight,
+      height: tempPersonalInfo.height,
+    };
+
+    try {
+      setSaving(true);
+      const response = await apiPut(
+        import.meta.env.VITE_URL_BE + "/api/user/profile",
+        updatedProfile
+      );
+
+      if (response.ok) {
+        const savedProfile = await response.json();
+        setProfile(savedProfile);
+        setEditingPersonalInfo(false);
+        toast.success("Personal information saved successfully!", {
+          title: "Profile Updated",
+        });
+        if (onProfileUpdate) {
+          onProfileUpdate();
+        }
+      } else {
+        toast.error("Failed to save personal information. Please try again.", {
+          title: "Save Failed",
+        });
+      }
+    } catch (error) {
+      console.error("Error saving personal information:", error);
+      toast.error("Network error occurred while saving personal information.", {
+        title: "Save Failed",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateTempPersonalInfo = (field, value) => {
+    setTempPersonalInfo((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const addWeightEntry = async () => {
@@ -180,6 +283,39 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
       console.error("Error deleting weight entry:", error);
       toast.error("Network error occurred while deleting weight entry.", {
         title: "Delete Failed",
+      });
+    }
+  };
+
+  const exportFoodDiary = async () => {
+    try {
+      const response = await apiGet(
+        import.meta.env.VITE_URL_BE + "/api/meals/export"
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "food_diary_export.csv");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        toast.success("Food diary exported successfully!", {
+          title: "Export Complete",
+        });
+      } else {
+        toast.error("Failed to export food diary. Please try again.", {
+          title: "Export Failed",
+        });
+      }
+    } catch (error) {
+      console.error("Error exporting food diary:", error);
+      toast.error("Network error occurred while exporting food diary.", {
+        title: "Export Failed",
       });
     }
   };
@@ -273,21 +409,169 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
           {/* Personal Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <User className="h-5 w-5" />
-                <span>Personal Information</span>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <User className="h-5 w-5" />
+                  <span>Personal Information</span>
+                </div>
+                {!editingPersonalInfo && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={startEditingPersonalInfo}
+                    className="flex items-center space-x-2"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    <span>Edit</span>
+                  </Button>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Name</label>
-                <Input
-                  value={profile.name}
-                  onChange={(e) => updateProfile("name", e.target.value)}
-                  placeholder="Enter your name"
-                  className="mt-1"
-                />
+              {editingPersonalInfo ? (
+                <>
+                  <div>
+                    <label className="text-sm font-medium">Name</label>
+                    <Input
+                      value={tempPersonalInfo.name}
+                      onChange={(e) =>
+                        updateTempPersonalInfo("name", e.target.value)
+                      }
+                      placeholder="Enter your name"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium flex items-center space-x-2">
+                        <Scale className="h-4 w-4" />
+                        <span>Initial Weight (kg)</span>
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={tempPersonalInfo.initialWeight || ""}
+                        onChange={(e) =>
+                          updateTempPersonalInfo(
+                            "initialWeight",
+                            e.target.value ? parseFloat(e.target.value) : null
+                          )
+                        }
+                        placeholder="Enter your initial weight"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium flex items-center space-x-2">
+                        <Ruler className="h-4 w-4" />
+                        <span>Height (cm)</span>
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={tempPersonalInfo.height || ""}
+                        onChange={(e) =>
+                          updateTempPersonalInfo(
+                            "height",
+                            e.target.value ? parseFloat(e.target.value) : null
+                          )
+                        }
+                        placeholder="Enter your height"
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={cancelEditingPersonalInfo}
+                      disabled={saving}
+                      className="flex items-center space-x-2"
+                    >
+                      <X className="h-4 w-4" />
+                      <span>Cancel</span>
+                    </Button>
+                    <Button
+                      onClick={showPersonalInfoConfirmation}
+                      disabled={saving}
+                      className="flex items-center space-x-2"
+                    >
+                      <Check className="h-4 w-4" />
+                      <span>{saving ? "Saving..." : "Save Changes"}</span>
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <label className="text-sm font-medium">Name</label>
+                    <div className="mt-1 p-3 bg-gray-50 rounded-md border">
+                      {profile.name || "Not specified"}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium flex items-center space-x-2">
+                        <Scale className="h-4 w-4" />
+                        <span>Initial Weight</span>
+                      </label>
+                      <div className="mt-1 p-3 bg-gray-50 rounded-md border">
+                        {profile.initialWeight
+                          ? `${profile.initialWeight} kg`
+                          : "Not specified"}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium flex items-center space-x-2">
+                        <Ruler className="h-4 w-4" />
+                        <span>Height</span>
+                      </label>
+                      <div className="mt-1 p-3 bg-gray-50 rounded-md border">
+                        {profile.height
+                          ? `${profile.height} cm`
+                          : "Not specified"}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Food Diary Export */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Download className="h-5 w-5" />
+                <span>Export Food Diary</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Export your complete food diary including all meals, quantities,
+                nutritional information, and timestamps for external analysis.
+              </p>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-900 mb-2">
+                  Export includes:
+                </h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Date of each meal</li>
+                  <li>• Meal type (breakfast, lunch, dinner, snack)</li>
+                  <li>• Food name and quantity consumed</li>
+                  <li>
+                    • Calories and macro nutrients (proteins, carbs, fats)
+                  </li>
+                  <li>• Date when food was added to diary</li>
+                </ul>
               </div>
+              <Button
+                onClick={exportFoodDiary}
+                className="w-full bg-green-600 hover:bg-green-700"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export Food Diary as CSV
+              </Button>
             </CardContent>
           </Card>
 
@@ -462,6 +746,11 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
                 </div>
               )}
 
+              {/* Weight Trend Chart */}
+              <div className="border-t pt-6">
+                <WeightTrendChart weightEntries={weightEntries} />
+              </div>
+
               {/* Add New Weight Entry */}
               <div className="border-t pt-4">
                 <h3 className="font-medium mb-3">Add Weight Entry</h3>
@@ -545,11 +834,18 @@ const UserProfile = ({ onBack, onProfileUpdate }) => {
       {/* Confirmation Modal */}
       <ConfirmModal
         isOpen={confirmModal.isOpen}
-        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onClose={() =>
+          setConfirmModal({
+            isOpen: false,
+            title: "",
+            message: "",
+            onConfirm: () => {},
+          })
+        }
         onConfirm={confirmModal.onConfirm}
         title={confirmModal.title}
         message={confirmModal.message}
-        type="danger"
+        type={confirmModal.title.includes("Save") ? "confirm" : "danger"}
       />
     </div>
   );

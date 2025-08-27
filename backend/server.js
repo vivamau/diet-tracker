@@ -65,6 +65,75 @@ function getDailyMeals(date) {
 
 // Routes
 
+// Export food diary as CSV (must be before :date route)
+app.get("/api/meals/export", async (req, res) => {
+  try {
+    await db.read();
+    const meals = db.data.meals || {};
+    const foodItems = db.data.foodItems || {};
+
+    // Create CSV header
+    let csvContent =
+      "Date,Meal Type,Food Name,Quantity,Unit,Calories per 100g,Total Calories,Fat per 100g,Total Fat (g),Carbohydrates per 100g,Total Carbohydrates (g),Proteins per 100g,Total Proteins (g),Inserted Date\n";
+
+    // Process each date's meals
+    Object.keys(meals)
+      .sort()
+      .forEach((date) => {
+        const dailyMeals = meals[date];
+
+        // Process each meal type
+        ["breakfast", "lunch", "dinner", "snacks"].forEach((mealType) => {
+          const mealEntries = dailyMeals[mealType] || [];
+
+          mealEntries.forEach((entry) => {
+            const foodItem = foodItems[entry.foodItemId];
+            if (foodItem) {
+              const quantity = entry.quantity || 0;
+              const quantityInGrams =
+                foodItem.unit === "grams" ? quantity : quantity * 100; // Assume 1 unit = 100g if not grams
+              const multiplier = quantityInGrams / 100; // Since nutrition values are per 100g
+
+              const totalCalories = (foodItem.calories * multiplier).toFixed(2);
+              const totalFat = (foodItem.fat * multiplier).toFixed(2);
+              const totalCarbs = (foodItem.carbohydrates * multiplier).toFixed(
+                2
+              );
+              const totalProteins = (foodItem.proteins * multiplier).toFixed(2);
+
+              const insertedDate = entry.addedAt
+                ? new Date(entry.addedAt).toISOString()
+                : "";
+
+              // Escape quotes in text fields and wrap in quotes
+              csvContent += `"${date}","${mealType}","${foodItem.name.replace(
+                /"/g,
+                '""'
+              )}","${quantity}","${foodItem.unit}","${
+                foodItem.calories
+              }","${totalCalories}","${foodItem.fat}","${totalFat}","${
+                foodItem.carbohydrates
+              }","${totalCarbs}","${
+                foodItem.proteins
+              }","${totalProteins}","${insertedDate}"\n`;
+            }
+          });
+        });
+      });
+
+    // Set headers for CSV download
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="food_diary_export.csv"'
+    );
+
+    res.send(csvContent);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to export food diary" });
+  }
+});
+
 // Get meals for a specific date
 app.get("/api/meals/:date", async (req, res) => {
   try {
@@ -146,6 +215,54 @@ app.get("/api/food-items", async (req, res) => {
     res.json(foodItems);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch food items" });
+  }
+});
+
+// Export food database as CSV
+app.get("/api/food-items/export", async (req, res) => {
+  try {
+    await db.read();
+    const foodItems = Object.values(db.data.foodItems);
+
+    // Sort by creation date (newest first)
+    const sortedItems = foodItems.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    // Create CSV header
+    let csvContent =
+      "ID,Name,Calories per 100g,Fat (g),Carbohydrates (g),Proteins (g),Unit,Barcode,Created At,Updated At\n";
+
+    // Add data rows
+    sortedItems.forEach((item) => {
+      const id = item.id || "";
+      const name = item.name || "";
+      const calories = item.calories || 0;
+      const fat = item.fat || 0;
+      const carbohydrates = item.carbohydrates || 0;
+      const proteins = item.proteins || 0;
+      const unit = item.unit || "";
+      const barcode = item.barcode || "";
+      const createdAt = item.createdAt || "";
+      const updatedAt = item.updatedAt || "";
+
+      // Escape quotes in text fields and wrap in quotes
+      csvContent += `"${id}","${name.replace(
+        /"/g,
+        '""'
+      )}","${calories}","${fat}","${carbohydrates}","${proteins}","${unit}","${barcode}","${createdAt}","${updatedAt}"\n`;
+    });
+
+    // Set headers for CSV download
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="food_database.csv"'
+    );
+
+    res.send(csvContent);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to export food database" });
   }
 });
 
@@ -313,6 +430,8 @@ app.get("/api/user/profile", async (req, res) => {
     // Return default profile if none exists
     const defaultProfile = {
       name: "",
+      initialWeight: null,
+      height: null,
       dailyTargets: {
         calories: 2000,
         proteins: 150,
@@ -323,7 +442,18 @@ app.get("/api/user/profile", async (req, res) => {
       updatedAt: new Date().toISOString(),
     };
 
-    res.json(db.data.userProfile || defaultProfile);
+    // Merge existing profile with default values to ensure all fields are present
+    const existingProfile = db.data.userProfile || {};
+    const mergedProfile = {
+      ...defaultProfile,
+      ...existingProfile,
+      dailyTargets: {
+        ...defaultProfile.dailyTargets,
+        ...(existingProfile.dailyTargets || {}),
+      },
+    };
+
+    res.json(mergedProfile);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch user profile" });
   }
@@ -332,11 +462,15 @@ app.get("/api/user/profile", async (req, res) => {
 // Update user profile
 app.put("/api/user/profile", async (req, res) => {
   try {
-    const { name, dailyTargets } = req.body;
+    const { name, initialWeight, height, dailyTargets } = req.body;
     await db.read();
 
     const profile = {
       name: name || "",
+      initialWeight: initialWeight
+        ? parseFloat(initialWeight)
+        : db.data.userProfile?.initialWeight || null,
+      height: height ? parseFloat(height) : db.data.userProfile?.height || null,
       dailyTargets: {
         calories: parseFloat(dailyTargets?.calories) || 2000,
         proteins: parseFloat(dailyTargets?.proteins) || 150,
@@ -410,16 +544,65 @@ app.delete("/api/user/weight/:date", async (req, res) => {
     const { date } = req.params;
     await db.read();
 
-    if (!db.data.weightEntries[date]) {
+    // Find all entries that start with the given date
+    const entriesToDelete = Object.keys(db.data.weightEntries).filter(
+      (key) => key === date || key.startsWith(date + "-")
+    );
+
+    if (entriesToDelete.length === 0) {
       return res.status(404).json({ error: "Weight entry not found" });
     }
 
-    delete db.data.weightEntries[date];
+    // Delete all matching entries
+    entriesToDelete.forEach((key) => {
+      delete db.data.weightEntries[key];
+    });
+
     await db.write();
 
     res.json({ message: "Weight entry deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: "Failed to delete weight entry" });
+  }
+});
+
+// Export weight entries as CSV
+app.get("/api/user/weight/export", async (req, res) => {
+  try {
+    await db.read();
+    const weightEntries = db.data.weightEntries || {};
+
+    // Convert to array and sort by date
+    const entries = Object.values(weightEntries).sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+
+    // Create CSV header
+    let csvContent = "Date,Time,Weight (kg),Created At\n";
+
+    // Add data rows
+    entries.forEach((entry) => {
+      const date = entry.date || "";
+      const time = entry.time || "";
+      const weight = entry.weight || "";
+      const createdAt = entry.createdAt || "";
+
+      // Combine date and time for full datetime if both are available
+      const datetime = time ? `${date} ${time}` : date;
+
+      csvContent += `"${datetime}","${time}","${weight}","${createdAt}"\n`;
+    });
+
+    // Set headers for CSV download
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="weight_data.csv"'
+    );
+
+    res.send(csvContent);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to export weight data" });
   }
 });
 

@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Edit, Trash2, ArrowLeft, Package } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  ArrowLeft,
+  Package,
+  Download,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -85,6 +93,31 @@ const FoodDatabase = ({ onBack }) => {
     setIsAddModalOpen(false);
   };
 
+  const handleExportCSV = async () => {
+    try {
+      const response = await fetch(
+        import.meta.env.VITE_URL_BE + "/api/food-items/export"
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to export data");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "food_database.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting CSV:", error);
+      alert("Failed to export food database");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -113,13 +146,23 @@ const FoodDatabase = ({ onBack }) => {
               <ArrowLeft className="h-4 w-4" />
               <span>Back to Diet Tracker</span>
             </Button>
-            <Button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex items-center space-x-2"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add New Food</span>
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                onClick={handleExportCSV}
+                className="flex items-center space-x-2"
+              >
+                <Download className="h-4 w-4" />
+                <span>Export CSV</span>
+              </Button>
+              <Button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex items-center space-x-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add New Food</span>
+              </Button>
+            </div>
           </div>
 
           <div className="text-center mb-6">
