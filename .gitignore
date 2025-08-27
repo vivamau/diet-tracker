@@ -80,3 +80,6 @@ pids
 # Temporary folders
 tmp/
 temp/
+
+# lowdb files
+db.json
