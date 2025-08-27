@@ -3,7 +3,8 @@ import { Search, Plus, Edit, Trash2, ArrowLeft, Package } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import AddNewFoodModal from "./AddNewFoodModal";
+import AddFoodToDatabaseModal from "./AddFoodToDatabaseModal";
+import ConfirmModal from "./ui/confirm-modal";
 import { apiGet, apiDelete } from "../lib/api";
 
 const FoodDatabase = ({ onBack }) => {
@@ -12,6 +13,11 @@ const FoodDatabase = ({ onBack }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState({
+    isOpen: false,
+    foodId: null,
+    foodName: "",
+  });
 
   // Fetch all food items
   const fetchFoodItems = async () => {
@@ -49,18 +55,14 @@ const FoodDatabase = ({ onBack }) => {
     }
   }, [searchQuery, foodItems]);
 
-  const handleDeleteFood = async (foodId, foodName) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete "${foodName}"? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
+  const handleDeleteFood = (foodId, foodName) => {
+    setConfirmDelete({ isOpen: true, foodId, foodName });
+  };
 
+  const confirmDeleteFood = async () => {
     try {
       const response = await apiDelete(
-        import.meta.env.VITE_URL_BE + `/api/food-items/${foodId}`
+        import.meta.env.VITE_URL_BE + `/api/food-items/${confirmDelete.foodId}`
       );
       if (response.ok) {
         await fetchFoodItems(); // Refresh the list
@@ -71,6 +73,11 @@ const FoodDatabase = ({ onBack }) => {
       console.error("Error deleting food item:", error);
       alert("Failed to delete food item");
     }
+    setConfirmDelete({ isOpen: false, foodId: null, foodName: "" });
+  };
+
+  const cancelDeleteFood = () => {
+    setConfirmDelete({ isOpen: false, foodId: null, foodName: "" });
   };
 
   const handleFoodAdded = () => {
@@ -199,10 +206,19 @@ const FoodDatabase = ({ onBack }) => {
           )}
         </main>
 
-        <AddNewFoodModal
+        <AddFoodToDatabaseModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
           onFoodAdded={handleFoodAdded}
+        />
+
+        <ConfirmModal
+          isOpen={confirmDelete.isOpen}
+          onClose={cancelDeleteFood}
+          onConfirm={confirmDeleteFood}
+          title="Delete Food Item"
+          message={`Are you sure you want to delete "${confirmDelete.foodName}"? This action cannot be undone.`}
+          type="danger"
         />
       </div>
     </div>
