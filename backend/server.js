@@ -27,7 +27,7 @@ app.use(
           origin +
           ") does not " +
           "allow access from the specified Origin.";
-        return callback(new Error(logger.error(msg)), false);
+        return callback(msg, false);
       }
       return callback(null, true);
     },
