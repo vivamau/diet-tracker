@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3001;
 let allowedOrigins = [
   //config.urlFE + (config.portFE != 80 ? ":" + config.portFE : "")
   "https://cute-diet.surge.sh",
+  "https://diet-tracker.surge.sh",
   "http://localhost:5174",
   "http://localhost:5173",
 ];
