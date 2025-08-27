@@ -9,7 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 let allowedOrigins = [
-  config.urlFE + (config.portFE != 80 ? ":" + config.portFE : ""),
+  //config.urlFE + (config.portFE != 80 ? ":" + config.portFE : "")
   "http://localhost:5174",
   "http://localhost:5173",
 ];
