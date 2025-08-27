@@ -7,14 +7,7 @@
       "snacks": []
     },
     "2025-08-27": {
-      "breakfast": [
-        {
-          "id": "16a0c728-d003-4a9c-8efe-06937dc065de",
-          "foodItemId": "5734f2b4-c482-45e6-a348-068ed56ac9d3",
-          "quantity": 10,
-          "addedAt": "2025-08-26T20:07:18.404Z"
-        }
-      ],
+      "breakfast": [],
       "lunch": [],
       "dinner": [],
       "snacks": []

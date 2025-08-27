@@ -219,7 +219,7 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
     }
 
     setIsScanning(false);
-  };
+  }; //
 
   const handleRetry = () => {
     setError(null);
