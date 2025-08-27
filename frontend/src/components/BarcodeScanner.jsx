@@ -10,6 +10,7 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
   const videoRef = useRef(null);
   const readerRef = useRef(null);
   const streamRef = useRef(null);
+  const hasScannedRef = useRef(false); // Flag to prevent multiple scans
 
   useEffect(() => {
     checkCameraPermission();
@@ -154,12 +155,16 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
         selectedDeviceId = backCamera.deviceId;
       }
 
+      // Reset the scan flag when starting a new scan
+      hasScannedRef.current = false;
+
       // Start barcode detection directly from the video element
       await readerRef.current.decodeFromVideoDevice(
         selectedDeviceId,
         videoRef.current,
         (result, err) => {
-          if (result) {
+          if (result && !hasScannedRef.current) {
+            hasScannedRef.current = true; // Mark as scanned to prevent multiple calls
             onScan(result.text);
             stopScanning();
           }
@@ -195,11 +200,21 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
   };
 
   const stopScanning = () => {
+    // Mark as scanned to prevent any further processing
+    hasScannedRef.current = true;
+
     if (readerRef.current) {
       try {
-        // Try to stop any ongoing decoding
+        // Stop any ongoing decoding more aggressively
+        if (typeof readerRef.current.stopContinuousDecode === "function") {
+          readerRef.current.stopContinuousDecode();
+        }
         if (typeof readerRef.current.reset === "function") {
           readerRef.current.reset();
+        }
+        // Release the reader
+        if (typeof readerRef.current.release === "function") {
+          readerRef.current.release();
         }
       } catch (error) {
         console.error("Error stopping reader:", error);
@@ -216,10 +231,11 @@ const BarcodeScanner = ({ onScan, onClose, onError }) => {
 
     if (videoRef.current) {
       videoRef.current.srcObject = null;
+      videoRef.current.pause();
     }
 
     setIsScanning(false);
-  }; //
+  };
 
   const handleRetry = () => {
     setError(null);
