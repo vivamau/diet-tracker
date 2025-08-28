@@ -82,4 +82,4 @@ tmp/
 temp/
 
 # lowdb files
-db.json
+backend/db.json

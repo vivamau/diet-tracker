@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Copy } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import AddFoodModal from "./AddFoodModal";
+import CopyMealModal from "./CopyMealModal";
 import { apiGet, apiPost, apiDelete } from "../lib/api";
 
 const MealCard = ({ mealType, title, date, onMealUpdate }) => {
   const [mealItems, setMealItems] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mealNutrition, setMealNutrition] = useState({
     calories: 0,
@@ -128,6 +130,28 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
     }
   };
 
+  const handleCopyMeal = async (foodItemId, quantity) => {
+    try {
+      const response = await apiPost(
+        import.meta.env.VITE_URL_BE + `/api/meals/${date}/${mealType}`,
+        { foodItemId, quantity }
+      );
+
+      if (response.ok) {
+        await fetchMealItems(); // Refresh the meal items
+        if (onMealUpdate) {
+          onMealUpdate(); // Notify parent to refresh nutrition summary
+        }
+      } else {
+        console.error("Failed to copy food item:", response.status);
+        throw new Error("Failed to copy food item");
+      }
+    } catch (error) {
+      console.error("Error copying food item:", error);
+      throw error; // Re-throw to handle in modal
+    }
+  };
+
   // Use the calculated meal nutrition
   const nutrition = mealNutrition;
 
@@ -138,15 +162,26 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
           <span className="text-2xl">{title.split(" ")[0]}</span>
           <span>{title.split(" ").slice(1).join(" ")}</span>
         </CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsAddModalOpen(true)}
-          className="bg-gradient-to-r from-green-500 to-green-600 text-primary-foreground hover:bg-primary hover:text-primary-foreground transition-colors shadow-sm"
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Add Food
-        </Button>
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCopyModalOpen(true)}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+          >
+            <Copy className="h-4 w-4 mr-1" />
+            Copy Meal
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-gradient-to-r from-green-500 to-green-600 text-primary-foreground hover:bg-primary hover:text-primary-foreground transition-colors shadow-sm"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Add Food
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -217,6 +252,14 @@ const MealCard = ({ mealType, title, date, onMealUpdate }) => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddFood={handleAddFood}
+      />
+
+      <CopyMealModal
+        isOpen={isCopyModalOpen}
+        onClose={() => setIsCopyModalOpen(false)}
+        onCopyMeal={handleCopyMeal}
+        currentDate={date}
+        currentMealType={mealType}
       />
     </Card>
   );
